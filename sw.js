@@ -1,9 +1,9 @@
 const CACHE_NAME = 'mainichibi-v1';
 const ASSETS = [
-  '/index.html',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
+  './index.html',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
   'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Shippori+Mincho:wght@400;600;700&display=swap'
 ];
 
@@ -55,10 +55,10 @@ self.addEventListener('push', event => {
   const title = data.title || '🎌 Günlük Japonca';
   const options = {
     body: data.body || 'Bugünün 5 kelimesi seni bekliyor!',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
+    icon: './icon-192.png',
+    badge: './icon-192.png',
     vibrate: [100, 50, 100],
-    data: { url: '/index.html' },
+    data: { url: './index.html' },
     actions: [
       { action: 'open',    title: 'Kelimeleri Gör' },
       { action: 'dismiss', title: 'Daha Sonra'     }
@@ -76,7 +76,7 @@ self.addEventListener('notificationclick', event => {
       for (const client of list) {
         if (client.url.includes('index.html') && 'focus' in client) return client.focus();
       }
-      if (clients.openWindow) return clients.openWindow('/index.html');
+      if (clients.openWindow) return clients.openWindow('./index.html');
     })
   );
 });
@@ -91,9 +91,9 @@ self.addEventListener('periodicsync', event => {
 async function sendDailyNotification() {
   await self.registration.showNotification('🎌 Bugünün Japonca Kelimeleri Hazır!', {
     body: 'Her gün 5 yeni kelime — bugününü kaçırma!',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
+    icon: './icon-192.png',
+    badge: './icon-192.png',
     vibrate: [100, 50, 100],
-    data: { url: '/index.html' }
+    data: { url: './index.html' }
   });
 }
