@@ -1290,7 +1290,7 @@ let deferredPrompt = null;
 // Register service worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
+    navigator.serviceWorker.register('./sw.js')
       .then(reg => {
         console.log('SW registered:', reg.scope);
         // Try to register periodic sync for daily notifications
@@ -1360,8 +1360,8 @@ function scheduleLocalNotifications() {
         const w = todayWords[0];
         new Notification('🎌 Günlük Japonca Kelimelerin Hazır!', {
           body: w ? `${w.char} (${w.romaji}) · ${w.meaning} — ve 4 kelime daha!` : 'Bugünün kelimelerini gör!',
-          icon: '/icon-192.png',
-          badge: '/icon-192.png'
+          icon: './icon-192.png',
+          badge: './icon-192.png'
         });
       }
     }, delay);
