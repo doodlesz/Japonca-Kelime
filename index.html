@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>毎日日本語 · Mainichibi</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Mainichibi" />
+  <meta name="theme-color" content="#1a1a2e" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Shippori+Mincho:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:        #1a1a2e;
+      --ink2:       #2d2d44;
+      --red:        #c0392b;
+      --red-light:  #f5e6e5;
+      --gold:       #d4a017;
+      --gold-light: #fdf3d8;
+      --cream:      #faf8f2;
+      --paper:      #f0ece0;
+      --border:     #c8b89a;
+      --muted:      #8a7f6e;
+      --kanji-blue:     #2c5f8a;
+      --kanji-bg:       #e8eef7;
+      --katakana-purple:#6b3d8a;
+      --katakana-bg:    #f0eaf7;
+      --hiragana-green: #2a6b4a;
+      --hiragana-bg:    #e8f4ed;
+      --card-shadow: 0 2px 12px rgba(26,26,46,0.07);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--cream);
+      font-family: 'Noto Sans JP', sans-serif;
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── APP SHELL ─────────────────────────────── */
+    .app {
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background: var(--cream);
+    }
+
+    /* ─── HEADER ────────────────────────────────── */
+    .header {
+      background: var(--ink);
+      color: white;
+      padding: 20px 20px 18px;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .header::before {
+      content: '日本語';
+      position: absolute;
+      right: -12px; top: -10px;
+      font-size: 72px;
+      opacity: 0.06;
+      font-family: 'Shippori Mincho', serif;
+      font-weight: 700;
+      color: white;
+      letter-spacing: -2px;
+      pointer-events: none;
+    }
+    .header-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .app-title {
+      font-family: 'Shippori Mincho', serif;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      line-height: 1.1;
+    }
+    .app-subtitle {
+      font-size: 11px;
+      opacity: 0.5;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    .streak-badge {
+      background: rgba(212,160,23,0.18);
+      border: 1px solid rgba(212,160,23,0.45);
+      color: var(--gold);
+      padding: 7px 13px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+    .streak-num { font-family: 'Shippori Mincho', serif; font-size: 16px; }
+
+    .progress-bar-wrap { }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      opacity: 0.5;
+      margin-bottom: 6px;
+    }
+    .progress-track {
+      height: 3px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 2px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), #f0c040);
+      border-radius: 2px;
+      transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ─── DATE BAR ───────────────────────────────── */
+    .date-bar {
+      background: var(--paper);
+      border-bottom: 1px solid var(--border);
+      padding: 9px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .date-text { font-size: 12px; color: var(--muted); }
+    .word-count-badge {
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--red-light);
+      color: var(--red);
+      padding: 2px 9px;
+      border-radius: 10px;
+    }
+
+    /* ─── SCROLLABLE CONTENT ─────────────────────── */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 72px;
+    }
+
+    /* ─── SCREENS ────────────────────────────────── */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ─── SECTION LABEL ──────────────────────────── */
+    .section-label {
+      padding: 16px 20px 8px;
+      font-size: 10px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    /* ─── WORD CARDS ─────────────────────────────── */
+    .word-card {
+      margin: 0 16px 10px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      animation: cardIn 0.35s ease both;
+    }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .word-card:nth-child(1) { animation-delay: 0.05s; }
+    .word-card:nth-child(2) { animation-delay: 0.10s; }
+    .word-card:nth-child(3) { animation-delay: 0.15s; }
+    .word-card:nth-child(4) { animation-delay: 0.20s; }
+    .word-card:nth-child(5) { animation-delay: 0.25s; }
+
+    .word-card:active { transform: scale(0.99); }
+    .word-card.learned { border-color: #a8d5b5; }
+    .word-card.learned .card-left { background: #f0faf4; }
+
+    .card-inner { display: flex; align-items: stretch; }
+
+    .card-left {
+      width: 92px;
+      min-width: 92px;
+      background: #fafaf7;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 18px 8px;
+      gap: 6px;
+      transition: background 0.3s;
+    }
+    .main-char {
+      font-family: 'Shippori Mincho', serif;
+      font-size: 38px;
+      color: var(--ink);
+      line-height: 1;
+    }
+    .char-type {
+      font-size: 9px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 5px;
+    }
+    .type-hiragana  { background: var(--hiragana-bg);  color: var(--hiragana-green); }
+    .type-katakana  { background: var(--katakana-bg);  color: var(--katakana-purple); }
+    .type-kanji     { background: var(--kanji-bg);     color: var(--kanji-blue); }
+
+    .card-right { flex: 1; padding: 14px 16px 12px; }
+
+    .word-romaji {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      margin-bottom: 2px;
+    }
+    .word-reading {
+      font-family: 'Shippori Mincho', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 5px;
+      line-height: 1.2;
+    }
+    .word-meaning {
+      font-size: 13px;
+      color: var(--ink2);
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+    .word-meta {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .category-tag {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 5px;
+      background: var(--paper);
+      color: var(--muted);
+      letter-spacing: 0.3px;
+      font-weight: 500;
+    }
+    .example-btn {
+      font-size: 11px;
+      color: var(--red);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      font-family: inherit;
+      text-decoration: underline;
+      text-decoration-style: dotted;
+      text-underline-offset: 2px;
+    }
+    .learn-btn {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      background: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      margin-left: auto;
+      transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+      flex-shrink: 0;
+      color: var(--muted);
+    }
+    .learn-btn.done {
+      background: var(--hiragana-green);
+      border-color: var(--hiragana-green);
+      color: white;
+      transform: scale(1.1);
+    }
+
+    .example-panel {
+      display: none;
+      background: #f8f6f0;
+      border-top: 1px solid var(--border);
+      padding: 13px 16px;
+      animation: slideDown 0.2s ease;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .example-panel.open { display: block; }
+    .example-jp {
+      font-family: 'Shippori Mincho', serif;
+      font-size: 16px;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+    .example-reading { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+    .example-tr { font-size: 12px; color: var(--ink2); font-style: italic; }
+
+    /* ─── QUIZ ───────────────────────────────────── */
+    .quiz-section {
+      margin: 4px 16px 20px;
+      background: var(--ink);
+      border-radius: 14px;
+      padding: 20px;
+      color: white;
+      box-shadow: var(--card-shadow);
+    }
+    .quiz-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .quiz-title { font-size: 14px; font-weight: 600; opacity: 0.9; }
+    .quiz-score-chips { display: flex; gap: 5px; }
+    .score-chip {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.2);
+      font-size: 11px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .score-chip.correct { background: var(--hiragana-green); border-color: var(--hiragana-green); }
+    .score-chip.wrong   { background: var(--red); border-color: var(--red); }
+
+    .quiz-question { font-size: 12px; opacity: 0.55; margin-bottom: 10px; }
+    .quiz-char {
+      font-family: 'Shippori Mincho', serif;
+      font-size: 56px;
+      text-align: center;
+      margin-bottom: 18px;
+      line-height: 1;
+    }
+    .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .quiz-option {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.13);
+      color: white;
+      border-radius: 10px;
+      padding: 11px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+      text-align: left;
+    }
+    .quiz-option:hover:not(:disabled) { background: rgba(255,255,255,0.14); }
+    .quiz-option:disabled { cursor: default; }
+    .quiz-option.correct { background: rgba(42,107,74,0.55); border-color: #4caf82; }
+    .quiz-option.wrong   { background: rgba(192,57,43,0.45); border-color: #e57373; }
+    .quiz-done {
+      text-align: center;
+      padding: 12px 0;
+    }
+    .quiz-done-icon { font-size: 44px; margin-bottom: 10px; }
+    .quiz-done-title { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+    .quiz-done-sub { font-size: 13px; opacity: 0.55; margin-bottom: 16px; }
+    .quiz-retry-btn {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: white;
+      padding: 9px 22px;
+      border-radius: 9px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      transition: background 0.15s;
+    }
+    .quiz-retry-btn:hover { background: rgba(255,255,255,0.2); }
+
+    /* ─── NOTIFICATION SCREEN ───────────────────── */
+    .settings-card {
+      margin: 0 16px 12px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+    }
+    .settings-header {
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .settings-title { font-size: 14px; font-weight: 600; }
+    .settings-row {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #f0ece0;
+    }
+    .settings-row:last-child { border-bottom: none; }
+    .settings-row-label { font-size: 13px; color: var(--muted); }
+
+    .toggle {
+      width: 42px; height: 24px;
+      background: #ccc;
+      border-radius: 12px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.25s;
+      border: none;
+      flex-shrink: 0;
+    }
+    .toggle.on { background: var(--hiragana-green); }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      background: white;
+      border-radius: 50%;
+      top: 3px; left: 3px;
+      transition: left 0.25s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .toggle.on::after { left: 21px; }
+
+    .time-select {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--ink);
+      cursor: pointer;
+      outline: none;
+    }
+    .time-select:focus { border-color: var(--kanji-blue); }
+
+    .notif-preview-wrap {
+      padding: 0 16px 16px;
+    }
+    .notif-preview {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+    .notif-preview-app {
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 7px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .notif-app-icon {
+      width: 18px; height: 18px;
+      background: var(--ink);
+      border-radius: 5px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-family: 'Shippori Mincho', serif;
+      color: var(--gold);
+    }
+    .notif-preview-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .notif-preview-body { font-size: 13px; color: var(--ink2); line-height: 1.5; }
+    .notif-preview-time { font-size: 10px; color: var(--muted); margin-top: 8px; text-align: right; }
+
+    /* ─── STATS SCREEN ───────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 8px 16px 16px;
+    }
+    .stat-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: var(--card-shadow);
+    }
+    .stat-number {
+      font-family: 'Shippori Mincho', serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1;
+    }
+    .stat-label { font-size: 11px; color: var(--muted); margin-top: 5px; }
+
+    .heatmap {
+      display: grid;
+      grid-template-columns: repeat(13, 1fr);
+      gap: 3px;
+      padding: 0 16px 20px;
+    }
+    .heatmap-cell {
+      aspect-ratio: 1;
+      border-radius: 3px;
+      background: #e4dfd0;
+    }
+    .heatmap-cell.l1 { background: #c0ddc9; }
+    .heatmap-cell.l2 { background: #7dc49a; }
+    .heatmap-cell.l3 { background: var(--hiragana-green); }
+
+    .bar-section { padding: 0 16px 20px; display: flex; flex-direction: column; gap: 13px; }
+    .bar-item { }
+    .bar-top { display: flex; justify-content: space-between; margin-bottom: 5px; }
+    .bar-label { font-size: 13px; font-weight: 500; }
+    .bar-count { font-size: 12px; color: var(--muted); }
+    .bar-track {
+      height: 7px;
+      background: #e4dfd0;
+      border-radius: 4px;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ─── BOTTOM NAV ─────────────────────────────── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 430px;
+      background: white;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0 env(safe-area-inset-bottom, 12px);
+      z-index: 100;
+      box-shadow: 0 -2px 16px rgba(0,0,0,0.05);
+    }
+    .nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--muted);
+      font-size: 10px;
+      padding: 4px 20px;
+      border-radius: 8px;
+      transition: color 0.15s;
+    }
+    .nav-btn.active { color: var(--red); }
+    .nav-icon {
+      font-size: 22px;
+      line-height: 1;
+      transition: transform 0.2s;
+    }
+    .nav-btn.active .nav-icon { transform: scale(1.1); }
+
+    /* ─── PWA INSTALL BANNER ────────────────────── */
+    .install-banner {
+      position: fixed;
+      bottom: 80px;
+      left: 16px; right: 16px;
+      max-width: 398px;
+      margin: 0 auto;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 24px rgba(26,26,46,0.15);
+      z-index: 150;
+      transform: translateY(120px);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+    }
+    .install-banner.visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .install-icon {
+      width: 44px; height: 44px;
+      background: var(--ink);
+      border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Shippori Mincho', serif;
+      font-size: 20px;
+      color: var(--gold);
+      flex-shrink: 0;
+    }
+    .install-text { flex: 1; }
+    .install-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .install-sub { font-size: 11px; color: var(--muted); }
+    .install-actions { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
+    .install-btn {
+      background: var(--ink);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .install-dismiss {
+      background: none;
+      border: none;
+      font-size: 11px;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+      text-align: center;
+    }
+
+    /* ─── NOTIFICATION PERMISSION BANNER ─────── */
+    .notif-banner {
+      margin: 12px 16px 0;
+      background: var(--gold-light);
+      border: 1px solid rgba(212,160,23,0.3);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+    .notif-banner-text { flex: 1; color: var(--ink2); line-height: 1.4; }
+    .notif-banner-btn {
+      background: var(--gold);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 13px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .toast {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+      z-index: 200;
+      white-space: nowrap;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ─── HEADER ───────────────────────── -->
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="app-title">毎日日本語</div>
+        <div class="app-subtitle">Mainichibi · Günlük Japonca</div>
+      </div>
+      <div class="streak-badge">
+        <span>🔥</span>
+        <span class="streak-num" id="streak-num">7</span>
+        <span style="font-size:11px;opacity:0.7;font-weight:400">gün</span>
+      </div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-label">
+        <span>Bugünkü ilerleme</span>
+        <span id="progress-label-txt">0 / 5 kelime</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── DATE BAR ─────────────────────── -->
+  <div class="date-bar">
+    <span class="date-text" id="date-txt"></span>
+    <span class="word-count-badge">5 yeni kelime</span>
+  </div>
+
+  <!-- ─── SCROLLABLE CONTENT ───────────── -->
+  <div class="content">
+
+    <!-- SCREEN: BUGÜN ─────────────────── -->
+    <div class="screen active" id="screen-today">
+      <div class="section-label">Bugünün Kelimeleri</div>
+      <div id="word-list"></div>
+
+      <div class="section-label">Hızlı Quiz</div>
+      <div class="quiz-section" id="quiz-box">
+        <div class="quiz-header">
+          <div class="quiz-title">Karakteri tanı</div>
+          <div class="quiz-score-chips" id="score-chips"></div>
+        </div>
+        <div class="quiz-question">Bu karakterin anlamı hangisidir?</div>
+        <div class="quiz-char" id="quiz-char">—</div>
+        <div class="quiz-options" id="quiz-options"></div>
+      </div>
+    </div>
+
+    <!-- SCREEN: BİLDİRİM ──────────────── -->
+    <div class="screen" id="screen-notif">
+      <div class="section-label" style="margin-top:4px;">Bildirim Ayarları</div>
+
+      <div class="settings-card">
+        <div class="settings-header">
+          <span class="settings-title">Günlük Bildirimler</span>
+          <button class="toggle on" id="main-toggle" onclick="toggleNotif(this)"></button>
+        </div>
+        <div class="settings-row">
+          <span class="settings-row-label">🌅 Sabah bildirimi</span>
+          <select class="time-select">
+            <option>07:00</option><option selected>08:00</option><option>09:00</option><option>10:00</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <span class="settings-row-label">☀️ Öğle tekrarı</span>
+          <select class="time-select">
+            <option>12:00</option><option selected>13:00</option><option>14:00</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <span class="settings-row-label">🌙 Gece tekrarı</span>
+          <select class="time-select">
+            <option>20:00</option><option selected>21:00</option><option>22:00</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-label">Bildirim Önizlemesi</div>
+      <div class="notif-preview-wrap">
+        <div class="notif-preview">
+          <div class="notif-preview-app">
+            <span class="notif-app-icon">日</span>
+            <span>Mainichibi</span>
+          </div>
+          <div class="notif-preview-title">🎌 Bugünün 5 Kelimesi Hazır!</div>
+          <div class="notif-preview-body" id="notif-preview-body">—</div>
+          <div class="notif-preview-time">08:00</div>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-header">
+          <span class="settings-title">Görünüm Tercihleri</span>
+        </div>
+        <div class="settings-row">
+          <span class="settings-row-label">Romaji göster</span>
+          <button class="toggle on" id="romaji-toggle" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="settings-row">
+          <span class="settings-row-label">Anlam dili</span>
+          <select class="time-select">
+            <option selected>Türkçe</option><option>İngilizce</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <span class="settings-row-label">Quiz soru sayısı</span>
+          <select class="time-select" id="quiz-count-sel">
+            <option>3</option><option selected>5</option><option>10</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="height:8px;"></div>
+    </div>
+
+    <!-- SCREEN: İSTATİSTİK ────────────── -->
+    <div class="screen" id="screen-stats">
+      <div class="section-label" style="margin-top:4px;">Genel Bakış</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" style="color:var(--ink)">42</div>
+          <div class="stat-label">Toplam kelime</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" style="color:var(--red)">7 🔥</div>
+          <div class="stat-label">Günlük seri</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" style="color:var(--kanji-blue)">%86</div>
+          <div class="stat-label">Quiz başarısı</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" style="color:var(--hiragana-green)">18</div>
+          <div class="stat-label">En uzun seri</div>
+        </div>
+      </div>
+
+      <div class="section-label">Son 91 Gün (13 Hafta)</div>
+      <div class="heatmap" id="heatmap"></div>
+
+      <div class="section-label">Alfabe Dağılımı</div>
+      <div class="bar-section">
+        <div class="bar-item">
+          <div class="bar-top">
+            <span class="bar-label" style="color:var(--hiragana-green)">Hiragana</span>
+            <span class="bar-count">22 kelime</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill" style="width:52%;background:var(--hiragana-green)"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-top">
+            <span class="bar-label" style="color:var(--kanji-blue)">Kanji</span>
+            <span class="bar-count">14 kelime</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill" style="width:33%;background:var(--kanji-blue)"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-top">
+            <span class="bar-label" style="color:var(--katakana-purple)">Katakana</span>
+            <span class="bar-count">6 kelime</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill" style="width:14%;background:var(--katakana-purple)"></div></div>
+        </div>
+      </div>
+      <div style="height:8px;"></div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- ─── BOTTOM NAV ────────────────────── -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="nav-today" onclick="showScreen('today')">
+      <span class="nav-icon">📖</span>
+      <span>Bugün</span>
+    </button>
+    <button class="nav-btn" id="nav-notif" onclick="showScreen('notif')">
+      <span class="nav-icon">🔔</span>
+      <span>Bildirim</span>
+    </button>
+    <button class="nav-btn" id="nav-stats" onclick="showScreen('stats')">
+      <span class="nav-icon">📊</span>
+      <span>İstatistik</span>
+    </button>
+  </nav>
+
+</div><!-- /app -->
+
+<!-- ─── PWA INSTALL BANNER ────────────────────── -->
+<div class="install-banner" id="install-banner">
+  <div class="install-icon">日</div>
+  <div class="install-text">
+    <div class="install-title">Ana ekrana ekle</div>
+    <div class="install-sub">Uygulama gibi kullan, internet gerekmez</div>
+  </div>
+  <div class="install-actions">
+    <button class="install-btn" onclick="triggerInstall()">Yükle</button>
+    <button class="install-dismiss" onclick="dismissInstall()">Daha sonra</button>
+  </div>
+</div>
+
+<!-- ─── TOAST ─────────────────────────── -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════
+   WORD DATABASE — günlük kelimeler
+   Her gün için 5 kelime. Tarih bazlı seçim.
+══════════════════════════════════════════ */
+const WORD_BANK = [
+  // Set 0
+  [
+    { char:'水', reading:'みず', romaji:'mizu', type:'kanji', meaning:'Su', category:'Doğa',
+      example:{ jp:'水が飲みたい。', reading:'みずが のみたい。', tr:'Su içmek istiyorum.' } },
+    { char:'ねこ', reading:'ねこ', romaji:'neko', type:'hiragana', meaning:'Kedi', category:'Hayvanlar',
+      example:{ jp:'ねこはかわいいです。', reading:'ねこは かわいいです。', tr:'Kedi sevimlidir.' } },
+    { char:'コーヒー', reading:'コーヒー', romaji:'kōhī', type:'katakana', meaning:'Kahve', category:'İçecek',
+      example:{ jp:'コーヒーをください。', reading:'コーヒーを ください。', tr:'Bir kahve lütfen.' } },
+    { char:'山', reading:'やま', romaji:'yama', type:'kanji', meaning:'Dağ', category:'Doğa',
+      example:{ jp:'山が高い。', reading:'やまが たかい。', tr:'Dağ yüksektir.' } },
+    { char:'あした', reading:'あした', romaji:'ashita', type:'hiragana', meaning:'Yarın', category:'Zaman',
+      example:{ jp:'あしたまた会いましょう。', reading:'あした また あいましょう。', tr:'Yarın tekrar görüşelim.' } }
+  ],
+  // Set 1
+  [
+    { char:'火', reading:'ひ', romaji:'hi', type:'kanji', meaning:'Ateş', category:'Doğa',
+      example:{ jp:'火は熱い。', reading:'ひは あつい。', tr:'Ateş sıcaktır.' } },
+    { char:'いぬ', reading:'いぬ', romaji:'inu', type:'hiragana', meaning:'Köpek', category:'Hayvanlar',
+      example:{ jp:'いぬが走る。', reading:'いぬが はしる。', tr:'Köpek koşar.' } },
+    { char:'テレビ', reading:'テレビ', romaji:'terebi', type:'katakana', meaning:'Televizyon', category:'Eşya',
+      example:{ jp:'テレビを見る。', reading:'テレビを みる。', tr:'Televizyon izliyorum.' } },
+    { char:'本', reading:'ほん', romaji:'hon', type:'kanji', meaning:'Kitap', category:'Eşya',
+      example:{ jp:'本を読む。', reading:'ほんを よむ。', tr:'Kitap okuyorum.' } },
+    { char:'きょう', reading:'きょう', romaji:'kyō', type:'hiragana', meaning:'Bugün', category:'Zaman',
+      example:{ jp:'きょうはいい天気です。', reading:'きょうは いい てんきです。', tr:'Bugün hava güzel.' } }
+  ],
+  // Set 2
+  [
+    { char:'空', reading:'そら', romaji:'sora', type:'kanji', meaning:'Gökyüzü', category:'Doğa',
+      example:{ jp:'空が青い。', reading:'そらが あおい。', tr:'Gökyüzü mavidir.' } },
+    { char:'とり', reading:'とり', romaji:'tori', type:'hiragana', meaning:'Kuş', category:'Hayvanlar',
+      example:{ jp:'とりが飛ぶ。', reading:'とりが とぶ。', tr:'Kuş uçar.' } },
+    { char:'アイスクリーム', reading:'アイスクリーム', romaji:'aisukurīmu', type:'katakana', meaning:'Dondurma', category:'Yiyecek',
+      example:{ jp:'アイスクリームが好きです。', reading:'アイスクリームが すきです。', tr:'Dondurma seviyorum.' } },
+    { char:'花', reading:'はな', romaji:'hana', type:'kanji', meaning:'Çiçek', category:'Doğa',
+      example:{ jp:'花がきれいです。', reading:'はなが きれいです。', tr:'Çiçek güzeldir.' } },
+    { char:'まいにち', reading:'まいにち', romaji:'mainichi', type:'hiragana', meaning:'Her gün', category:'Zaman',
+      example:{ jp:'まいにち日本語を勉強します。', reading:'まいにち にほんごを べんきょうします。', tr:'Her gün Japonca çalışıyorum.' } }
+  ],
+  // Set 3
+  [
+    { char:'月', reading:'つき', romaji:'tsuki', type:'kanji', meaning:'Ay', category:'Doğa',
+      example:{ jp:'月が明るい。', reading:'つきが あかるい。', tr:'Ay parlaktır.' } },
+    { char:'さかな', reading:'さかな', romaji:'sakana', type:'hiragana', meaning:'Balık', category:'Hayvanlar',
+      example:{ jp:'さかなを食べる。', reading:'さかなを たべる。', tr:'Balık yiyorum.' } },
+    { char:'バス', reading:'バス', romaji:'basu', type:'katakana', meaning:'Otobüs', category:'Ulaşım',
+      example:{ jp:'バスで学校へ行く。', reading:'バスで がっこうへ いく。', tr:'Otobüsle okula gidiyorum.' } },
+    { char:'家', reading:'いえ', romaji:'ie', type:'kanji', meaning:'Ev', category:'Yer',
+      example:{ jp:'家に帰りたい。', reading:'いえに かえりたい。', tr:'Eve dönmek istiyorum.' } },
+    { char:'なつ', reading:'なつ', romaji:'natsu', type:'hiragana', meaning:'Yaz', category:'Mevsim',
+      example:{ jp:'なつはあつい。', reading:'なつは あつい。', tr:'Yaz sıcaktır.' } }
+  ],
+  // Set 4
+  [
+    { char:'雨', reading:'あめ', romaji:'ame', type:'kanji', meaning:'Yağmur', category:'Hava',
+      example:{ jp:'雨が降る。', reading:'あめが ふる。', tr:'Yağmur yağıyor.' } },
+    { char:'うま', reading:'うま', romaji:'uma', type:'hiragana', meaning:'At', category:'Hayvanlar',
+      example:{ jp:'うまは速い。', reading:'うまは はやい。', tr:'At hızlıdır.' } },
+    { char:'レストラン', reading:'レストラン', romaji:'resutoran', type:'katakana', meaning:'Restoran', category:'Yer',
+      example:{ jp:'レストランで食べる。', reading:'レストランで たべる。', tr:'Restoranda yiyorum.' } },
+    { char:'道', reading:'みち', romaji:'michi', type:'kanji', meaning:'Yol', category:'Yer',
+      example:{ jp:'この道はどこへ？', reading:'この みちは どこへ？', tr:'Bu yol nereye gidiyor?' } },
+    { char:'ふゆ', reading:'ふゆ', romaji:'fuyu', type:'hiragana', meaning:'Kış', category:'Mevsim',
+      example:{ jp:'ふゆはさむい。', reading:'ふゆは さむい。', tr:'Kış soğuktur.' } }
+  ],
+  // Set 5
+  [
+    { char:'星', reading:'ほし', romaji:'hoshi', type:'kanji', meaning:'Yıldız', category:'Doğa',
+      example:{ jp:'星がきれいだ。', reading:'ほしが きれいだ。', tr:'Yıldızlar güzel.' } },
+    { char:'うさぎ', reading:'うさぎ', romaji:'usagi', type:'hiragana', meaning:'Tavşan', category:'Hayvanlar',
+      example:{ jp:'うさぎが跳ぶ。', reading:'うさぎが とぶ。', tr:'Tavşan zıplar.' } },
+    { char:'スマホ', reading:'スマホ', romaji:'sumaho', type:'katakana', meaning:'Akıllı telefon', category:'Teknoloji',
+      example:{ jp:'スマホを使う。', reading:'スマホを つかう。', tr:'Akıllı telefon kullanıyorum.' } },
+    { char:'友', reading:'とも', romaji:'tomo', type:'kanji', meaning:'Arkadaş', category:'İnsan',
+      example:{ jp:'友と遊ぶ。', reading:'ともと あそぶ。', tr:'Arkadaşımla oynuyorum.' } },
+    { char:'はる', reading:'はる', romaji:'haru', type:'hiragana', meaning:'İlkbahar', category:'Mevsim',
+      example:{ jp:'はるはきれいです。', reading:'はるは きれいです。', tr:'İlkbahar güzeldir.' } }
+  ],
+  // Set 6
+  [
+    { char:'川', reading:'かわ', romaji:'kawa', type:'kanji', meaning:'Nehir', category:'Doğa',
+      example:{ jp:'川で泳ぐ。', reading:'かわで およぐ。', tr:'Nehirde yüzüyorum.' } },
+    { char:'くま', reading:'くま', romaji:'kuma', type:'hiragana', meaning:'Ayı', category:'Hayvanlar',
+      example:{ jp:'くまは大きい。', reading:'くまは おおきい。', tr:'Ayı büyüktür.' } },
+    { char:'カメラ', reading:'カメラ', romaji:'kamera', type:'katakana', meaning:'Kamera', category:'Teknoloji',
+      example:{ jp:'カメラで写真を撮る。', reading:'カメラで しゃしんを とる。', tr:'Kamerayla fotoğraf çekiyorum.' } },
+    { char:'食', reading:'しょく', romaji:'shoku', type:'kanji', meaning:'Yemek (yeme)', category:'Yiyecek',
+      example:{ jp:'食事を楽しむ。', reading:'しょくじを たのしむ。', tr:'Yemeğin tadını çıkarıyorum.' } },
+    { char:'あき', reading:'あき', romaji:'aki', type:'hiragana', meaning:'Sonbahar', category:'Mevsim',
+      example:{ jp:'あきは涼しい。', reading:'あきは すずしい。', tr:'Sonbahar serindir.' } }
+  ]
+];
+
+/* ── State ──────────────────────────── */
+let learnedWords = new Set();
+let todayWords   = [];
+let quizIdx      = 0;
+let quizScore    = 0;
+let quizQuestions = [];
+
+/* ── Helpers ────────────────────────── */
+function getDaySet() {
+  const d = new Date();
+  const dayOfYear = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
+  return WORD_BANK[dayOfYear % WORD_BANK.length];
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function typeClass(t) {
+  return { hiragana:'type-hiragana', katakana:'type-katakana', kanji:'type-kanji' }[t] || 'type-kanji';
+}
+function typeLabel(t) {
+  return { hiragana:'Hiragana', katakana:'Katakana', kanji:'Kanji' }[t] || 'Kanji';
+}
+
+/* ── Date Display ───────────────────── */
+function setDate() {
+  const now = new Date();
+  const days   = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+  const months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  document.getElementById('date-txt').textContent =
+    days[now.getDay()] + ', ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+}
+
+/* ── Progress ───────────────────────── */
+function updateProgress() {
+  const n = learnedWords.size, total = todayWords.length;
+  document.getElementById('progress-fill').style.width = (n / total * 100) + '%';
+  document.getElementById('progress-label-txt').textContent = n + ' / ' + total + ' kelime';
+}
+
+/* ── Word Cards ─────────────────────── */
+function renderWords() {
+  const container = document.getElementById('word-list');
+  container.innerHTML = '';
+  todayWords.forEach((w, i) => {
+    const learned = learnedWords.has(i);
+    const card = document.createElement('div');
+    card.className = 'word-card' + (learned ? ' learned' : '');
+    card.id = 'card-' + i;
+
+    const readingDisplay = (w.reading !== w.char) ? w.reading : '—';
+
+    card.innerHTML = `
+      <div class="card-inner">
+        <div class="card-left">
+          <div class="main-char">${w.char}</div>
+          <div class="char-type ${typeClass(w.type)}">${typeLabel(w.type)}</div>
+        </div>
+        <div class="card-right">
+          <div class="word-romaji">${w.romaji}</div>
+          <div class="word-reading">${readingDisplay}</div>
+          <div class="word-meaning">${w.meaning}</div>
+          <div class="word-meta">
+            <span class="category-tag">${w.category}</span>
+            <button class="example-btn" onclick="toggleExample(${i},event)">örnek cümle</button>
+            <button class="learn-btn ${learned ? 'done' : ''}" id="lb-${i}" onclick="toggleLearn(${i},event)" title="${learned ? 'Öğrenildi' : 'Öğrendim'}">
+              ${learned ? '✓' : '○'}
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="example-panel" id="ex-${i}">
+        <div class="example-jp">${w.example.jp}</div>
+        <div class="example-reading">${w.example.reading}</div>
+        <div class="example-tr">${w.example.tr}</div>
+      </div>`;
+    container.appendChild(card);
+  });
+}
+
+function toggleExample(i, e) {
+  e.stopPropagation();
+  document.getElementById('ex-' + i).classList.toggle('open');
+}
+
+function toggleLearn(i, e) {
+  e.stopPropagation();
+  if (learnedWords.has(i)) {
+    learnedWords.delete(i);
+    showToast('Geri alındı');
+  } else {
+    learnedWords.add(i);
+    showToast('✓ Öğrenildi olarak işaretlendi!');
+  }
+  renderWords();
+  updateProgress();
+}
+
+/* ── Quiz ───────────────────────────── */
+function buildQuizQuestions() {
+  // All 5 words as quiz questions, shuffled
+  const idxs = todayWords.map((_,i) => i);
+  for (let i = idxs.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i+1));
+    [idxs[i], idxs[j]] = [idxs[j], idxs[i]];
+  }
+  quizQuestions = idxs.slice(0, 5);
+}
+
+function renderScoreChips() {
+  const chips = document.getElementById('score-chips');
+  if (!chips) return;
+  chips.innerHTML = '';
+  quizQuestions.forEach((_, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'score-chip';
+    chip.id = 'chip-' + i;
+    chip.textContent = i + 1;
+    chips.appendChild(chip);
+  });
+}
+
+function renderQuizQuestion() {
+  const box = document.getElementById('quiz-box');
+  if (!box) return;
+
+  if (quizIdx >= quizQuestions.length) {
+    box.innerHTML = `
+      <div class="quiz-done">
+        <div class="quiz-done-icon">${quizScore === quizQuestions.length ? '🎉' : '📚'}</div>
+        <div class="quiz-done-title">${quizScore === quizQuestions.length ? 'Mükemmel!' : 'Quiz Bitti!'}</div>
+        <div class="quiz-done-sub">${quizScore} / ${quizQuestions.length} doğru cevap</div>
+        <button class="quiz-retry-btn" onclick="resetQuiz()">Tekrar dene</button>
+      </div>`;
+    return;
+  }
+
+  const idx     = quizQuestions[quizIdx];
+  const correct = todayWords[idx];
+  const wrongs  = todayWords.filter((_, i) => i !== idx);
+  // pick 3 wrong options (or fewer if not enough words)
+  const opts = [correct];
+  const shuffledWrongs = [...wrongs].sort(() => Math.random() - 0.5);
+  opts.push(...shuffledWrongs.slice(0, 3));
+  opts.sort(() => Math.random() - 0.5);
+
+  const charEl   = document.getElementById('quiz-char');
+  const optsEl   = document.getElementById('quiz-options');
+  if (!charEl || !optsEl) return;
+
+  charEl.textContent = correct.char;
+
+  optsEl.innerHTML = '';
+  opts.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-option';
+    btn.innerHTML = `<div style="font-size:10px;opacity:0.55;margin-bottom:3px;">${opt.romaji}</div><div style="font-weight:600">${opt.meaning}</div>`;
+    btn.onclick = () => answerQuiz(opt === correct, btn, optsEl, idx);
+    optsEl.appendChild(btn);
+  });
+}
+
+function answerQuiz(isCorrect, btn, container, wordIdx) {
+  Array.from(container.children).forEach(b => {
+    b.disabled = true;
+    b.style.pointerEvents = 'none';
+  });
+
+  const chip = document.getElementById('chip-' + quizIdx);
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    if (chip) { chip.classList.add('correct'); chip.textContent = '✓'; }
+    quizScore++;
+  } else {
+    btn.classList.add('wrong');
+    if (chip) { chip.classList.add('wrong'); chip.textContent = '✗'; }
+    // show correct answer
+    Array.from(container.children).forEach(b => {
+      if (!b.classList.contains('wrong')) b.classList.add('correct');
+    });
+    // also mark the word as needs review
+  }
+
+  quizIdx++;
+  setTimeout(() => {
+    const charEl = document.getElementById('quiz-char');
+    if (charEl) charEl.style.opacity = '0';
+    setTimeout(() => {
+      renderQuizQuestion();
+      const charEl2 = document.getElementById('quiz-char');
+      if (charEl2) { charEl2.style.opacity = '0'; charEl2.style.transition='opacity 0.2s'; setTimeout(()=>charEl2.style.opacity='1',50); }
+    }, 200);
+  }, 1100);
+}
+
+function resetQuiz() {
+  quizIdx = 0; quizScore = 0;
+  buildQuizQuestions();
+  document.getElementById('quiz-box').innerHTML = `
+    <div class="quiz-header">
+      <div class="quiz-title">Karakteri tanı</div>
+      <div class="quiz-score-chips" id="score-chips"></div>
+    </div>
+    <div class="quiz-question">Bu karakterin anlamı hangisidir?</div>
+    <div class="quiz-char" id="quiz-char">—</div>
+    <div class="quiz-options" id="quiz-options"></div>`;
+  renderScoreChips();
+  renderQuizQuestion();
+}
+
+/* ── Notification Toggle ────────────── */
+function toggleNotif(btn) {
+  btn.classList.toggle('on');
+  showToast(btn.classList.contains('on') ? '🔔 Bildirimler açıldı' : '🔕 Bildirimler kapatıldı');
+}
+
+/* ── Notification Preview ───────────── */
+function buildNotifPreview() {
+  const el = document.getElementById('notif-preview-body');
+  if (!el || !todayWords.length) return;
+  const lines = todayWords.slice(0,2).map(w => `${w.char} (${w.romaji}) · ${w.meaning}`);
+  lines.push(`ve ${todayWords.length - 2} kelime daha...`);
+  el.innerHTML = lines.join('<br>');
+}
+
+/* ── Heatmap ────────────────────────── */
+function buildHeatmap() {
+  const hm = document.getElementById('heatmap');
+  if (!hm) return;
+  const levels = Array.from({length:91}, () => Math.floor(Math.random() * 4));
+  // last 7 days: today and recent
+  levels[90] = 3; levels[89] = 3; levels[88] = 2;
+  levels[87] = 0; levels[86] = 3; levels[85] = 2; levels[84] = 1;
+  hm.innerHTML = '';
+  levels.forEach(l => {
+    const cell = document.createElement('div');
+    cell.className = 'heatmap-cell' + (l ? ' l' + l : '');
+    hm.appendChild(cell);
+  });
+}
+
+/* ── Navigation ─────────────────────── */
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  // Scroll to top
+  document.querySelector('.content').scrollTop = 0;
+}
+
+/* ── Browser Notifications ──────────── */
+function requestNotifPermission() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission().then(perm => {
+      if (perm === 'granted') showToast('✓ Bildirimler için izin verildi!');
+    });
+  }
+}
+
+/* ── INIT ───────────────────────────── */
+function init() {
+  setDate();
+  todayWords = getDaySet();
+  renderWords();
+  updateProgress();
+  buildQuizQuestions();
+  renderScoreChips();
+  renderQuizQuestion();
+  buildHeatmap();
+  buildNotifPreview();
+  // Ask for notification permission after a short delay
+  setTimeout(requestNotifPermission, 2000);
+}
+
+init();
+
+/* ══════════════════════════════════════════
+   PWA — Service Worker + Install Prompt
+══════════════════════════════════════════ */
+let deferredPrompt = null;
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => {
+        console.log('SW registered:', reg.scope);
+        // Try to register periodic sync for daily notifications
+        if ('periodicSync' in reg) {
+          reg.periodicSync.register('daily-words', { minInterval: 24 * 60 * 60 * 1000 })
+            .catch(() => {});
+        }
+      })
+      .catch(err => console.log('SW error:', err));
+  });
+}
+
+// Capture install prompt (Android Chrome)
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show banner after 3 seconds if not already dismissed
+  if (!localStorage.getItem('installDismissed')) {
+    setTimeout(() => {
+      document.getElementById('install-banner').classList.add('visible');
+    }, 3000);
+  }
+});
+
+// App installed
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-banner').classList.remove('visible');
+  showToast('✓ Uygulama ana ekrana eklendi!');
+  deferredPrompt = null;
+});
+
+function triggerInstall() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(result => {
+      if (result.outcome === 'accepted') showToast('✓ Kurulum başlatıldı!');
+      deferredPrompt = null;
+      document.getElementById('install-banner').classList.remove('visible');
+    });
+  } else {
+    // iOS Safari — show manual instructions
+    showToast('Safari\'de: Paylaş → Ana Ekrana Ekle');
+  }
+}
+
+function dismissInstall() {
+  document.getElementById('install-banner').classList.remove('visible');
+  localStorage.setItem('installDismissed', '1');
+}
+
+// Schedule local notifications via setTimeout (works when app is open)
+function scheduleLocalNotifications() {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const now = new Date();
+  const times = [
+    { h: 8,  m: 0 },
+    { h: 13, m: 0 },
+    { h: 21, m: 0 }
+  ];
+  times.forEach(({ h, m }) => {
+    const target = new Date();
+    target.setHours(h, m, 0, 0);
+    if (target <= now) target.setDate(target.getDate() + 1);
+    const delay = target - now;
+    setTimeout(() => {
+      if (Notification.permission === 'granted') {
+        const w = todayWords[0];
+        new Notification('🎌 Günlük Japonca Kelimelerin Hazır!', {
+          body: w ? `${w.char} (${w.romaji}) · ${w.meaning} — ve 4 kelime daha!` : 'Bugünün kelimelerini gör!',
+          icon: '/icon-192.png',
+          badge: '/icon-192.png'
+        });
+      }
+    }, delay);
+  });
+}
+
+// Override requestNotifPermission to also schedule
+const _origReq = requestNotifPermission;
+function requestNotifPermission() {
+  if ('Notification' in window) {
+    if (Notification.permission === 'granted') {
+      scheduleLocalNotifications();
+    } else if (Notification.permission === 'default') {
+      Notification.requestPermission().then(perm => {
+        if (perm === 'granted') {
+          showToast('✓ Bildirimler açıldı!');
+          scheduleLocalNotifications();
+        }
+      });
+    }
+  }
+}
+</script>
+</body>
+</html>
