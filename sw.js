@@ -1,5 +1,6 @@
-const CACHE_NAME = 'mainichibi-v1';
+const CACHE_NAME = 'mainichibi-v2';
 const ASSETS = [
+  './',
   './index.html',
   './manifest.json',
   './icon-192.png',
@@ -58,7 +59,7 @@ self.addEventListener('push', event => {
     icon: './icon-192.png',
     badge: './icon-192.png',
     vibrate: [100, 50, 100],
-    data: { url: './index.html' },
+    data: { url: './' },
     actions: [
       { action: 'open',    title: 'Kelimeleri Gör' },
       { action: 'dismiss', title: 'Daha Sonra'     }
@@ -74,9 +75,9 @@ self.addEventListener('notificationclick', event => {
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
       for (const client of list) {
-        if (client.url.includes('index.html') && 'focus' in client) return client.focus();
+        if (client.url.includes('Japonca-Kelime') && 'focus' in client) return client.focus();
       }
-      if (clients.openWindow) return clients.openWindow('./index.html');
+      if (clients.openWindow) return clients.openWindow('./');
     })
   );
 });
@@ -94,6 +95,6 @@ async function sendDailyNotification() {
     icon: './icon-192.png',
     badge: './icon-192.png',
     vibrate: [100, 50, 100],
-    data: { url: './index.html' }
+    data: { url: './' }
   });
 }
