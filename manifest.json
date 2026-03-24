@@ -2,7 +2,7 @@
   "name": "毎日日本語 · Mainichibi",
   "short_name": "Mainichibi",
   "description": "Her gün 5 yeni Japonca kelime öğren",
-  "start_url": "/index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#1a1a2e",
@@ -29,7 +29,7 @@
       "name": "Bugünün Kelimeleri",
       "short_name": "Bugün",
       "description": "Günün 5 kelimesini gör",
-      "url": "/index.html#today",
+      "url": "./index.html#today",
       "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
   ]
